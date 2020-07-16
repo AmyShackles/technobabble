@@ -1,13 +1,34 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.LSx2 {
+    background-color: turquoise;
+    color: black;
+    font-weight: bold;
 }
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.LSx3 {
+    background-color: darkblue;
+    color: white;
+    font-weight: bold;
+}
+.WSx2 {
+    background-color: fuchsia;
+    color: white;
+    font-weight: bold;
+}
+.WSx3 {
+    background-color: red;
+    color: white;
+    font-weight: bold;
+}
+.tile {
+    height: 60px;
+    width: 60px;
+}
+.board-row {
+    display: flex;
+}
+.letter {
+    height: 60px;
+    width: 60px;
+    padding: 0;
+    background: linear-gradient(to right, rgba(233,212,179,1) 0%, rgba(204,168,114,1) 0%, rgba(204,170,118,1) 0%, rgba(182,141,76,1) 0%, rgba(182,141,76,1) 0%, rgba(204,170,120,1) 0%, rgba(224,194,152,1) 6%, rgba(204,168,114,1) 18%, rgba(204,169,116,1) 22%, rgba(204,168,114,1) 26%, rgba(214,184,139,1) 32%, rgba(212,179,134,1) 38%, rgba(214,184,139,1) 49%, rgba(207,172,120,1) 57%, rgba(207,172,120,1) 62%, rgba(214,184,139,1) 68%, rgba(207,172,120,1) 75%, rgba(204,168,114,1) 80%, rgba(212,179,134,1) 88%, rgba(204,166,108,1) 96%, rgba(189,158,111,1) 100%);
+    font-weight: bold;
 }
