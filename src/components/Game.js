@@ -1,8 +1,8 @@
 import React from 'react';
 import { Board } from './Board.js';
-
+import socketIO from 'socket.io-client';
+const socket = socketIO(process.env.REACT_APP_URL);
 let tiles = Array(9).fill('A').concat(Array(2).fill('B')).concat(Array(2).fill('C')).concat(Array(4).fill('D')).concat(Array(12).fill('E')).concat(Array(2).fill('F')).concat(Array(3).fill("G")).concat(Array(2).fill("H")).concat(Array(9).fill("I")).concat(Array(1).fill("J")).concat(Array(1).fill("K")).concat(Array(4).fill("L")).concat(Array(2).fill("M")).concat(Array(6).fill("N")).concat(Array(8).fill("O")).concat(Array(2).fill("P")).concat(Array(1).fill("Q")).concat(Array(6).fill("R")).concat(Array(4).fill("S")).concat(Array(6).fill("T")).concat(Array(4).fill("U")).concat(Array(2).fill("V")).concat(Array(2).fill("W")).concat(Array(1).fill("X")).concat(Array(2).fill("Y")).concat(Array(1).fill("Z")).concat(Array(2).fill(" "));
-console.log(tiles)
 
 
 
@@ -77,9 +77,7 @@ export class Game extends React.Component {
         let tiles = this.state.tiles;
         for (let i = 0; i < 7; i++) {
             const tile = Math.floor(Math.random() * (tiles.length));
-            console.log(tile)
             selectedTiles.push(tiles[tile]);
-            console.log(selectedTiles)
             tiles.splice(tile, 1);
         }
         this.setState({
@@ -89,6 +87,13 @@ export class Game extends React.Component {
     }
     componentDidMount() {
         this.setupGame();
+    }
+    componentDidUpdate() {
+        socket.on('FromAPI', data => {
+            this.setState({
+                response: data
+            })
+        })
     }
     getCol(index) {
         return index % 15;
@@ -212,6 +217,9 @@ export class Game extends React.Component {
             this.getMovesOnBoard(index);
         }
     }
+    pass() {
+        socket.emit('submit_move', [])
+    }
     submit(playerTiles) {
         const [tiles, selectedTiles] = this.getRandom(playerTiles);
         this.setState({
@@ -248,6 +256,32 @@ export class Game extends React.Component {
             availableMoves
         })
     }
+    swapLetters = (lettersToSwap, lettersToKeep) => {
+        /* NOT YET WORKING 
+        const selectedTiles = lettersToKeep
+        let tiles = this.state.tiles;
+        for (let i = 0; i < lettersToSwap.length || 7; i++) {
+            const tile = Math.floor(Math.random() * (tiles.length));
+            selectedTiles.push(tiles[tile]);
+            tiles.splice(tile, 1);
+        }
+        tiles.push(...lettersToSwap);
+        this.setState({
+            tiles,
+            playerTiles: selectedTiles
+        })
+        this.swappingFinished();
+        */
+    }
+    swappingFinished = () => {
+        /* NOT YET WORKING
+        this.setState({
+            swapMode: false
+        })
+        socket.emit('submit_move', [])
+        */
+    }
+    
     render() {
         return (
             <div className="game">
