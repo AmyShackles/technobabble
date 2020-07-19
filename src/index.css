@@ -32,3 +32,18 @@
     background: linear-gradient(to right, rgba(233,212,179,1) 0%, rgba(204,168,114,1) 0%, rgba(204,170,118,1) 0%, rgba(182,141,76,1) 0%, rgba(182,141,76,1) 0%, rgba(204,170,120,1) 0%, rgba(224,194,152,1) 6%, rgba(204,168,114,1) 18%, rgba(204,169,116,1) 22%, rgba(204,168,114,1) 26%, rgba(214,184,139,1) 32%, rgba(212,179,134,1) 38%, rgba(214,184,139,1) 49%, rgba(207,172,120,1) 57%, rgba(207,172,120,1) 62%, rgba(214,184,139,1) 68%, rgba(207,172,120,1) 75%, rgba(204,168,114,1) 80%, rgba(212,179,134,1) 88%, rgba(204,166,108,1) 96%, rgba(189,158,111,1) 100%);
     font-weight: bold;
 }
+.gameBoard {
+    display: flex;
+}
+.actions {
+    display: flex;
+    flex-direction: column;
+}
+.tileValue {
+   text-align: right;
+   margin: 5px;
+}
+.scrabbleLetter {
+    font-size: 20px;
+    margin-top: -5px;
+}

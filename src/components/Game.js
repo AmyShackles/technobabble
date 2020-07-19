@@ -27,7 +27,7 @@ export class Game extends React.Component {
                 {}, {}, {bonus: 'WSx2'}, {}, {}, {}, {bonus: 'LSx2'}, {}, {bonus: 'LSx2'}, {}, {}, {}, {bonus: 'WSx2'}, {}, {},
                 {}, {bonus: 'WSx2'}, {}, {}, {}, {bonus: 'LSx3'}, {}, {}, {}, {bonus: 'LSx3'}, {}, {}, {}, {bonus: 'WSx2'}, {},
                 {bonus: 'WSx3'}, {}, {}, {bonus: 'LSx2'}, {}, {}, {}, {bonus: 'WSx3'}, {}, {}, {}, {bonus: 'LSx2'}, {}, {}, {bonus: 'WSx3'},
-            ],
+            ].map((tile, index) => { return {...tile, index }}),
             tiles,
             tileVal: {
                 A: 1,
@@ -57,8 +57,21 @@ export class Game extends React.Component {
                 Y: 4,
                 Z: 10
             },
+            scrabbleTiles: [],
+            firstMove: true,
+            availableMoves: ['7,7'],
+            wordDirection: '',
+            word: [],
+            response: {},
+            yourTurn: true,
+            currentTurn: []
         };
+        this.updateBoard = this.updateBoard.bind(this);
+        this.submit = this.submit.bind(this);
+        this.updateAvailableMoves = this.updateAvailableMoves.bind(this);
+        this.getMovesOnBoard = this.getMovesOnBoard.bind(this);
     }
+    
     setupGame() {
         const selectedTiles = [];
         let tiles = this.state.tiles;
@@ -77,10 +90,187 @@ export class Game extends React.Component {
     componentDidMount() {
         this.setupGame();
     }
+    getCol(index) {
+        return index % 15;
+    }
+    getRow(index) {
+        return Math.floor(index / 15);
+    }
+    getAdjacentTileIndices(index) {
+        // To get the tile above the given tile, we need to subtract 15 to get to the spot on the previous row
+        // To get the tile below the given tile, we need to add 15 to get to the spot on the next row
+        // To get the tile to the left, we need to subtract one
+        // To get to the tile on the right, we need to add one
+        return [index - 15, index - 1, index + 1, index + 15]
+    }
+    getAdjacentTiles(index) {
+        // Converts index values to "row,col" values
+        const tiles = this.getAdjacentTileIndices(index);
+        return [...tiles.map(tile => `${this.getRow(tile)},${this.getCol(tile)}`)];
+    }
+    getMovesOnBoard(index) {
+        let moves = [];
+        this.state.board.forEach(tile => {
+            if (tile.value) {
+                moves.push(tile.index)
+            }
+        });
+        if (moves.length !== 0) {
+            // If calling this from a child function for a first move, we don't need to check against the current tile
+            if (!index) {
+            const availableMoves = [];
+                moves.forEach(tile => availableMoves.push(...this.getAdjacentTiles(tile)))
+                this.setState({
+                    availableMoves
+                })
+            } else {
+                // Now we need to find the tile already on the board that the first move of the turn is attaching to
+                // This is important for determining what moves are valid and for having a correct value for currentTurn
+                const current = [index];
+                let prevMove;
+                console.log({current})
+                const directions = [index - 15, index - 1, index + 1, index + 15];
+                for (let i = 0; i < moves.length; i++) {
+                    if (directions.includes(moves[i])) {
+                        prevMove = moves[i];
+                        break;
+                    }
+                }
+                current.unshift(prevMove);
+                const available = [];
+                current.forEach(tile => available.push(...this.getAdjacentTiles(tile)));
+                const currentTurn = current.map(tile => `${this.getRow(tile)},${this.getCol(tile)}`)
+                this.setState({
+                    availableMoves: available,
+                    currentTurn
+                })
+            }
+        }
+    }
+    getIndex(id) {
+        const [row, col] = id.split(",");
+        return row * 15 + col;
+    }
+    getMoves(currentTurn) {
+        if (currentTurn.length < 2) {
+            return false;
+        } else {
+            // Sorting the array to get the first index that appears in the word
+            currentTurn.sort((a, b) => {
+                const aIndex = this.getIndex(a);
+                const bIndex = this.getIndex(b);
+                return aIndex - bIndex
+            })
+            let [firstRow, firstCol] = currentTurn[0].split(",");
+            let [prevRow, prevCol] = currentTurn[currentTurn.length - 2].split(",");
+            let [curRow, curCol] = currentTurn[currentTurn.length - 1].split(",");
+            if (+prevRow < +curRow) {
+                const prev = `${--firstRow},${firstCol}`;
+                const next = `${++curRow},${curCol}`;
+                return [prev, next];
+            } else if (+prevRow > +curRow) {
+                const prev = `${++firstRow},${firstCol}`;
+                const next = `${--curRow},${curCol}`;
+                return [prev, next];
+            } else if (+prevCol < +curCol) {
+                const prev = `${firstRow},${--firstCol}`;
+                const next = `${curRow},${++curCol}`;
+                return [prev, next];
+            } else if (+prevCol > +curCol) {
+                const prev = `${firstRow},${++firstCol}`;
+                const next = `${curRow},${--curCol}`
+                return [prev, next];
+            }
+        }
+    }
+    updateAvailableMoves(id, value) {
+        const board = this.state.board;
+        const index = value.index;
+        board[index] = value;
+
+        const current = [...this.state.currentTurn, id];
+        const availableMoves = this.getMoves(current);
+        if (availableMoves) {
+            this.setState({
+                availableMoves,
+                currentTurn: current,
+                board
+            })
+        } else if (id === '7,7') {
+            // Since the first move is always 7,7, the second move is also predictable
+            // Hardcoded to avoid necessity to calculate it
+            this.setState({
+                availableMoves: ['6,7', '8,7', '7,6', '7,8'],
+                currentTurn: current,
+                board
+            });
+        } else {
+            this.setState({
+                currentTurn: current,
+                board
+            });
+            this.getMovesOnBoard(index);
+        }
+    }
+    submit(playerTiles) {
+        const [tiles, selectedTiles] = this.getRandom(playerTiles);
+        this.setState({
+            tiles,
+            playerTiles: selectedTiles,
+            currentTurn: []
+        })
+        socket.emit('submit_move', this.state.board);
+    }
+    getRandom(playerTiles) {
+        const selectedTiles = playerTiles.slice();
+        let tiles = this.state.tiles;
+        for (let i = playerTiles.length; i < 7; i++) {
+            const tile = Math.floor(Math.random() * (tiles.length));
+            selectedTiles.push(tiles[tile]);
+            tiles.splice(tile, 1);
+        }
+        return [tiles, selectedTiles]
+    }
+    startSwappingLetters = () => {
+        this.setState({
+            swapMode: true
+        });
+    }
+    updateBoard(tile) {
+        const id = tile.index;
+        let board = this.state.board;
+        board[id] = tile;
+        this.setState({
+            board
+        })
+        const availableMoves = this.getAdjacentTiles(id);
+        this.setState({
+            availableMoves
+        })
+    }
     render() {
         return (
             <div className="game">
-               {this.state.playerTiles &&  <Board tiles={this.state.board} scrabbleTiles={this.state.playerTiles} tileVal={this.state.tileVal} />}
+               {this.state.playerTiles && this.state.playerTiles.length === 7 &&  (
+               <Board 
+                    tiles={this.state.tiles}
+                    board={this.state.board}
+                    availableMoves={this.state.availableMoves}
+                    playerTiles={this.state.playerTiles}
+                    tileVal={this.state.tileVal}
+                    pass={this.pass}
+                    startSwappingLetters={this.startSwappingLetters}
+                    swapLetters={this.swapLetters}
+                    swappingFinished={this.swappingFinished}
+                    submit={this.submit}
+                    swapMode={this.state.swapMode}
+                    updateBoard={this.updateBoard}
+                    yourTurn={this.state.yourTurn}
+                    updateAvailableMoves={this.updateAvailableMoves}
+                    getMovesOnBoard={this.getMovesOnBoard}
+                    getMoves={this.getMoves}
+                />
+               )}
             </div>
         )
     }
