@@ -43,7 +43,10 @@
    text-align: right;
    margin: 5px;
 }
-.scrabbleLetter {
+.tileLetter {
     font-size: 20px;
     margin-top: -5px;
+}
+.playerTiles {
+    display: flex;
 }

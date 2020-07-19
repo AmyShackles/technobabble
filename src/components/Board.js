@@ -1,6 +1,6 @@
 import React from 'react';
 import { BoardTile } from './BoardTile.js';
-import { ScrabbleTiles } from './ScrabbleTiles.js';
+import { PlayerTiles } from './PlayerTiles.js';
 
 
 export const Board = ({ board, availableMoves, playerTiles, submit, tileVal, pass, startSwappingLetters, swappingFinished, swapLetters, swapMode, updateBoard, getMovesOnBoard, updateAvailableMoves, getMoves}) => {
@@ -112,7 +112,7 @@ export const Board = ({ board, availableMoves, playerTiles, submit, tileVal, pas
         <div className="actions">
         <div className="playerTiles">
             {playerTiles.map((tile, index) => {
-                return <ScrabbleTiles tileVal={tileVal} key={index} id={index} tile={tile} handleClick={handleClick} handleDragEnd={handleDragEnd} handleDragStart={handleDragStart}/>
+                return <PlayerTiles tileVal={tileVal} key={index} id={index} tile={tile} handleClick={handleClick} handleDragEnd={handleDragEnd} handleDragStart={handleDragStart}/>
 
             })}
         </div>
