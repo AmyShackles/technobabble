@@ -34,6 +34,7 @@ export function BoardTile(props) {
                 target.value = draggedTile.value;
                 props.updateAvailableMoves(e.target.id, target);
                 props.setPlaced(true);
+                props.handleScore(target.bonus, +draggedTile.firstChild.textContent)
 
             }
         } else {
@@ -44,7 +45,7 @@ export function BoardTile(props) {
     const tileText = bonusText[bonus] ?? <><br/><br/><br/></>;
     const { col, row } = props;
     if (value) {
-        return <button value={value} id={`${row},${col}`} className="letter" onDrop={e => handleDrop(e)} onDragEnter={e => handleDragEnter(e)} onDragLeave={e => handleDragLeave(e)} onDragOver={e => handleDragOver(e)}><p className="tileValue">{props.tileVal[value]}</p><p className="tileLetter">{value}</p></button>
+        return <button value={value} id={`${row},${col}`} className="letter" onDrop={e => handleDrop(e)} onDragEnter={e => handleDragEnter(e)} onDragLeave={e => handleDragLeave(e)} onDragOver={e => handleDragOver(e)}><p className="tileValue" value={props.tileVal[value]}>{props.tileVal[value]}</p><p className="tileLetter">{value}</p></button>
     }
     return (
         <button value={JSON.stringify(props.value)} id={`${row},${col}`} onDrop={e => handleDrop(e)} onDragEnter={e => handleDragEnter(e)} onDragLeave={e => handleDragLeave(e)} onDragOver={e => handleDragOver(e)} className={bonus ? `${bonus} tile` : 'tile'}>{tileText}</button>

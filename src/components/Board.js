@@ -8,7 +8,32 @@ export const Board = ({ board, availableMoves, playerTiles, submit, tileVal, pas
     const [word, setWord] = React.useState('');
     const [tiles, setTiles] = React.useState([]);
     const [placed, setPlaced] = React.useState(false);
+    const [wordMultiplier, setWordMultiplier] = React.useState(1);
+    const [runningTotal, setRunningTotal] = React.useState(0);
 
+    const handleScore = (boardValue, tileValue) => {
+        console.log('boardValue', boardValue, 'tileValue', tileValue)
+        if (boardValue) {
+            switch (boardValue) {
+                case 'WSx3':
+                    setWordMultiplier(multiplier => multiplier * 3);
+                    setRunningTotal(total => total + tileValue);
+                    break;
+                case 'WSx2':
+                    setWordMultiplier(multiplier => multiplier * 2);
+                    setRunningTotal(total => total + tileValue);
+                    break;
+                case 'LSx3':
+                    setRunningTotal(total => total + (tileValue * 3));
+                    break;
+                case 'LSx2':
+                    setRunningTotal(total => total + (tileValue * 2));
+                    break;
+            }
+        } else {
+            setRunningTotal(total => total + tileValue);
+        }
+    }
     const handleClick = e => {
         const { value } = e.target;
         e.preventDefault();
@@ -36,18 +61,22 @@ export const Board = ({ board, availableMoves, playerTiles, submit, tileVal, pas
             for (let i = 0; i < value; i++) {
                 lettersToRemain.push(key);
             }
-        });
-        submit(lettersToRemain);
+        });        
+        const score = runningTotal * wordMultiplier;
+        console.log('runningTotal', runningTotal, 'wordMultiplier', wordMultiplier, 'score', score)
+        submit(lettersToRemain, score);
         tiles.forEach(tile => {
             tile.style.display = '';
         })
         setWord('');
         setTiles([])
+
     }
     const handleDragStart = e => {
         if (!word) {
            getMovesOnBoard();
         }
+        console.log('e.target in handleDragStart', e.target.firstElementChild.nodeValue)
         e.currentTarget.style.border = ''
         e.dataTransfer.setData('text', e.target.id);
         e.effectAllowed = 'copyMove';
@@ -58,9 +87,12 @@ export const Board = ({ board, availableMoves, playerTiles, submit, tileVal, pas
             const currentTiles = tiles;
             currentTiles.push(e.target);
             setTiles(currentTiles);
+            console.log('e.target in handleDragEnd', e.target)
+            console.log('CHILDREN', e.target.firstChild.textContent);
             e.target.style.display = 'none';
             e.dataTransfer.clearData();
         }
+
 
 
     };
@@ -91,9 +123,9 @@ export const Board = ({ board, availableMoves, playerTiles, submit, tileVal, pas
     for (let index = 0; index < board.length; index++) {
         if (board[index].value) {
             const value = JSON.stringify();
-            cols.push(<BoardTile setPlaced={setPlaced} key={index} id={board[index]} updateAvailableMoves={updateAvailableMoves} availableMoves={availableMoves} tileVal={tileVal} row={rows.length} col={cols.length} value={board[index]} className="letter"/>);
+            cols.push(<BoardTile handleScore={(boardVal, tileVal) => handleScore(boardVal, tileVal)} setPlaced={setPlaced} key={index} id={board[index]} updateAvailableMoves={updateAvailableMoves} availableMoves={availableMoves} tileVal={tileVal} row={rows.length} col={cols.length} value={board[index]} className="letter"/>);
         } else {
-            cols.push(<BoardTile setPlaced={setPlaced} key={index} updateAvailableMoves={updateAvailableMoves} availableMoves={availableMoves} updateBoard={updateBoard} row={rows.length} col={cols.length} value={board[index]}/>)
+            cols.push(<BoardTile handleScore={(boardVal, tileVal) => handleScore(boardVal, tileVal)} setPlaced={setPlaced} key={index} updateAvailableMoves={updateAvailableMoves} availableMoves={availableMoves} updateBoard={updateBoard} row={rows.length} col={cols.length} value={board[index]}/>)
         }
         if ((index + 1) % 15 === 0) {
             rows.push(
@@ -112,7 +144,7 @@ export const Board = ({ board, availableMoves, playerTiles, submit, tileVal, pas
         <div className="actions">
         <div className="playerTiles">
             {playerTiles.map((tile, index) => {
-                return <PlayerTiles tileVal={tileVal} key={index} id={index} tile={tile} handleClick={handleClick} handleDragEnd={handleDragEnd} handleDragStart={handleDragStart}/>
+                return <PlayerTiles tileVal={tileVal} value={tileVal[tile]} key={index} id={index} tile={tile} handleClick={handleClick} handleDragEnd={handleDragEnd} handleDragStart={handleDragStart}/>
 
             })}
         </div>
