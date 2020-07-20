@@ -132,16 +132,15 @@ export class Game extends React.Component {
                 // Now we need to find the tile already on the board that the first move of the turn is attaching to
                 // This is important for determining what moves are valid and for having a correct value for currentTurn
                 const current = [index];
-                let prevMove;
+                let prevMove = [];
                 console.log({current})
                 const directions = [index - 15, index - 1, index + 1, index + 15];
                 for (let i = 0; i < moves.length; i++) {
                     if (directions.includes(moves[i])) {
-                        prevMove = moves[i];
-                        break;
+                        prevMove.push(moves[i]);
                     }
                 }
-                current.unshift(prevMove);
+                current.unshift(...prevMove);
                 const available = [];
                 current.forEach(tile => available.push(...this.getAdjacentTiles(tile)));
                 const currentTurn = current.map(tile => `${this.getRow(tile)},${this.getCol(tile)}`)
@@ -160,13 +159,16 @@ export class Game extends React.Component {
         if (currentTurn.length < 2) {
             return false;
         } else {
+            // Make a copy so as not to mutate the currentTurn array
+            const current = currentTurn.slice();
             // Sorting the array to get the first index that appears in the word
-            currentTurn.sort((a, b) => {
+            current.sort((a, b) => {
                 const aIndex = this.getIndex(a);
                 const bIndex = this.getIndex(b);
                 return aIndex - bIndex
             })
-            let [firstRow, firstCol] = currentTurn[0].split(",");
+            let [firstRow, firstCol] = current[0].split(",");
+            // We do not want to use the sorted array to get the current and previous tiles
             let [prevRow, prevCol] = currentTurn[currentTurn.length - 2].split(",");
             let [curRow, curCol] = currentTurn[currentTurn.length - 1].split(",");
             if (+prevRow < +curRow) {
@@ -213,8 +215,7 @@ export class Game extends React.Component {
             this.setState({
                 currentTurn: current,
                 board
-            });
-            this.getMovesOnBoard(index);
+            }, () => this.getMovesOnBoard(index));
         }
     }
     pass() {
