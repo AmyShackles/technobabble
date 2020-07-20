@@ -1,7 +1,7 @@
 import React from 'react';
 import { Board } from './Board.js';
 import socketIO from 'socket.io-client';
-const socket = socketIO(process.env.REACT_APP_URL);
+
 let tiles = Array(9).fill('A').concat(Array(2).fill('B')).concat(Array(2).fill('C')).concat(Array(4).fill('D')).concat(Array(12).fill('E')).concat(Array(2).fill('F')).concat(Array(3).fill("G")).concat(Array(2).fill("H")).concat(Array(9).fill("I")).concat(Array(1).fill("J")).concat(Array(1).fill("K")).concat(Array(4).fill("L")).concat(Array(2).fill("M")).concat(Array(6).fill("N")).concat(Array(8).fill("O")).concat(Array(2).fill("P")).concat(Array(1).fill("Q")).concat(Array(6).fill("R")).concat(Array(4).fill("S")).concat(Array(6).fill("T")).concat(Array(4).fill("U")).concat(Array(2).fill("V")).concat(Array(2).fill("W")).concat(Array(1).fill("X")).concat(Array(2).fill("Y")).concat(Array(1).fill("Z")).concat(Array(2).fill(" "));
 
 
@@ -12,7 +12,7 @@ export class Game extends React.Component {
         super(props);
         this.state = {
             board: [
-                {bonus: 'WSx3'}, {}, {}, {bonus: 'LSx2'}, {bonus: 'LSx2'}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {bonus: 'WSx3'},
+               {bonus: 'WSx3'}, {}, {}, {bonus: 'LSx2'}, {bonus: 'LSx2'}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {bonus: 'WSx3'},
                 {}, {}, {bonus: 'WSx2'}, {}, {}, {bonus: 'LSx2'}, {}, {}, {}, {}, {}, {}, {}, {}, {},
                 {}, {}, {bonus: 'WSx2'}, {}, {}, {bonus: 'LSx2'}, {}, {}, {}, {}, {}, {}, {}, {}, {},
                 {}, {}, {}, {}, {}, {}, {bonus: 'LSx2'}, {}, {}, {}, {}, {}, {}, {}, {},
@@ -64,7 +64,8 @@ export class Game extends React.Component {
             word: [],
             response: {},
             yourTurn: true,
-            currentTurn: []
+            currentTurn: [],
+
         };
         this.updateBoard = this.updateBoard.bind(this);
         this.submit = this.submit.bind(this);
@@ -87,13 +88,22 @@ export class Game extends React.Component {
     }
     componentDidMount() {
         this.setupGame();
+        const socket = socketIO(process.env.REACT_APP_URL);
+        socket.on('connected', data => {
+            console.log('data in connected', data)
+            this.setState({socket})
+        })
     }
     componentDidUpdate() {
-        socket.on('FromAPI', data => {
-            this.setState({
-                response: data
+        const { socket } = this.state;
+        if (socket) {
+            this.state.socket.on('boardState', data => {
+                this.setState({
+                    board: data.board
+                })
             })
-        })
+        }
+
     }
     getCol(index) {
         return index % 15;
@@ -219,16 +229,19 @@ export class Game extends React.Component {
         }
     }
     pass() {
-        socket.emit('submit_move', [])
+        this.state.socket.emit('submit_move', [])
     }
-    submit(playerTiles) {
+    submit(playerTiles, score) {
         const [tiles, selectedTiles] = this.getRandom(playerTiles);
+        let prevScore = this.state.score;
+        prevScore += score;
         this.setState({
             tiles,
             playerTiles: selectedTiles,
-            currentTurn: []
+            currentTurn: [],
+            score
         })
-        socket.emit('submit_move', this.state.board);
+        this.state.socket.emit('submit_move', this.state.board);
     }
     getRandom(playerTiles) {
         const selectedTiles = playerTiles.slice();
